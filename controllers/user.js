@@ -8,8 +8,8 @@ module.exports = {
     register: async (req, res) => {
         const user = await User.findOne({ email: req.body.email })
         if (user) {
-            // return res.send("帳號已註冊過，請直接登入");
-            return res.send(common.standardResponse(409, '帳號已註冊過，請直接登入', ''))
+            const result = common.standardResponse(409, '帳號已註冊過，請直接登入', '')
+            return res.send(result)
         }
         const salt = await bcrypt.genSalt(10)
         const hash = await bcrypt.hash(req.body.password, salt)
@@ -20,7 +20,8 @@ module.exports = {
             password: hash,
           })
           newUser.save();
-          res.send(common.standardResponse(200, '成功註冊', ''))
+          const result = common.standardResponse(200, '成功註冊', '')
+          res.send(result)
     },
     login: (req, res) => {
 
