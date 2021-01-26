@@ -13,7 +13,7 @@ module.exports = {
         }
         const sameUserId = await User.findOne({ userId: req.body.userId })
         if (sameUserId) {
-            const result = common.standardResponse(409, '該用戶名稱已已有人使用，請重新輸入', '')
+            const result = common.standardResponse(409, '該用戶名稱已有人使用，請重新輸入', '')
             return res.send(result)
         }
         const salt = await bcrypt.genSalt(10)
