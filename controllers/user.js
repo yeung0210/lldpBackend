@@ -6,9 +6,14 @@ const bodyParser = require("body-parser");
 
 module.exports = { 
     register: async (req, res) => {
-        const user = await User.findOne({ email: req.body.email })
-        if (user) {
-            const result = common.standardResponse(409, '帳號已註冊過，請直接登入', '')
+        const sameEmailUser = await User.findOne({ email: req.body.email })
+        if (sameEmailUser) {
+            const result = common.standardResponse(409, '該電子郵件地址已有人使用', '')
+            return res.send(result)
+        }
+        const sameUserId = await User.findOne({ userId: req.body.userId })
+        if (sameUserId) {
+            const result = common.standardResponse(409, '該用戶名稱已已有人使用，請重新輸入', '')
             return res.send(result)
         }
         const salt = await bcrypt.genSalt(10)
