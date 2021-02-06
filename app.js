@@ -14,7 +14,7 @@ app.use(express.static("public"));
 const userRoutes = require('./routes/user')
 
 mongoose.connect("mongodb://localhost:27017/lldpDB", {
-    useNewUrlParser: true, useUnifiedTopology: true
+    useNewUrlParser: true, useUnifiedTopology: true,  useFindAndModify: false 
 });
 
 app.use('/users', userRoutes)

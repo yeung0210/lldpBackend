@@ -1,10 +1,22 @@
 const User = require('../models/user')
 const bcrypt = require('bcryptjs')
 const common = require('../common')
-const express = require("express");
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const response = require('../common');
+const nodemailer = require('nodemailer');
+const async = require('async');
+const crypto = require('crypto');
+
+var email = process.env.MAILER_EMAIL_ID || 'auth_email_address@gmail.com',
+  pass = process.env.MAILER_PASSWORD || 'auth_email_pass'
+
+var smtpTransport = nodemailer.createTransport({
+  service: process.env.MAILER_SERVICE_PROVIDER || 'Gmail',
+    auth: {
+        user: email,
+        pass: pass
+    }
+});
 
 
 
@@ -53,7 +65,7 @@ module.exports = {
         };
         res.send(common.response(200, '成功登入', data))
     }, 
-    authenticate: (req, res, nex) => {
+    authenticate: (req, res, next) => {
         const authHeader = req.headers['authorization']
         const token = authHeader && authHeader.split(' ')[1]
         if (token == null) { return res.sendStatus(401) }
@@ -63,6 +75,48 @@ module.exports = {
             req.user = user
             next()
         })
+    },
+    forgotPassword: async (req, res) => {
+        const email = req.body.email;
+        const user = await User.findOne({ email })
+        if (!user) { 
+            return res.send(common.response(404, '用戶不存在', ''))  
+        }
+
+        async.waterfall([
+            function(next) { 
+                crypto.randomBytes(20, function(err, buffer) {
+                    var token = buffer.toString('hex');
+                    console.log(token);
+                    next(err, user, token);
+                });
+            },
+            function(user, token, next) {
+                User.findByIdAndUpdate({ _id: user._id }, { reset_password_token: token, reset_password_expires: Date.now() + 86400000 }, { upsert: true, new: true }).exec(function(err, new_user) {
+                  next(err, token, new_user);
+                });
+            },
+            function(token, user, done) {
+                var data = {
+                  to: user.email,
+                  from: email,
+                  template: 'forgot-password-email',
+                  subject: 'Password help has arrived!',
+                  text: user.name + " " + token
+                };
+          
+                smtpTransport.sendMail(data, function(err) {
+                  if (!err) {
+                    return res.send(common.response(200, '已發送', ''));
+                  } else {
+                    return res.send(common.response(503, '網絡問題', err));
+                  }
+                });
+              }
+
+        ]);
+        
+
     }
 }
 
