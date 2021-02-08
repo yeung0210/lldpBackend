@@ -101,8 +101,8 @@ module.exports = {
                   to: user.email,
                   from: email,
                   template: 'forgot-password-email',
-                  subject: 'Password help has arrived!',
-                  html: '<h2>請透過以下連結進入應用程式重設密碼</h2><p><a>請按此重設密碼</a></p>'
+                  subject: '主子萬歲：重設密碼',
+                  html: '<h2>重設密碼</h2><p>請透過以下連結，進入應用程式</p><p><a>按此重設密碼</a></p>'
                 };
           
                 smtpTransport.sendMail(data, function(err) {
