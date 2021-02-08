@@ -77,8 +77,8 @@ module.exports = {
         })
     },
     forgotPassword: async (req, res) => {
-        const email = req.body.email;
-        const user = await User.findOne({ email })
+        const userId = req.body.userId;
+        const user = await User.findOne({ userId })
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
@@ -102,14 +102,14 @@ module.exports = {
                   from: email,
                   template: 'forgot-password-email',
                   subject: 'Password help has arrived!',
-                  text: user.name + " " + token
+                  html: '<h2>請透過以下連結進入應用程式重設密碼</h2><p><a>請按此重設密碼</a></p>'
                 };
           
                 smtpTransport.sendMail(data, function(err) {
                   if (!err) {
-                    return res.send(common.response(200, '已發送', ''));
+                    return res.send(common.response(200, '已透過電郵將密碼重設連結傳送給用戶', ''));
                   } else {
-                    return res.send(common.response(503, '網絡問題', err));
+                    return res.send(common.response(503, '網絡問題，無法傳送密碼重設連結', err));
                   }
                 });
               }
