@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema ({
     email: String,
     name: String,
     password: String, 
-    reset_password_code: String
+    reset_password_code: String,
+    reset_password_expires: Date
 
 });
 module.exports = mongoose.model('User', userSchema)

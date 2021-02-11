@@ -77,21 +77,22 @@ module.exports = {
         })
     },
     forgotPassword: async (req, res) => {
-        const user_id = req.body.user_id;
-        const user = await User.findOne({ user_id })
+        const email = req.body.email;
+        const user = await User.findOne({ email })
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
 
         async.waterfall([
-            function(next) { 
-                crypto.randomBytes(3, function(err, buffer) {
-                    var verificationCode = buffer.toString('hex');
-                    console.log(verificationCode);
-                    next(err, user, verificationCode);
-                });
-            },
-            function(user, verificationCode, next) {
+            function(next) {
+                const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                var randomString = '';
+                for (var i = 0; i < 6; i++) {
+                    var randomPoz = Math.floor(Math.random() * charSet.length);
+                    randomString += charSet.substring(randomPoz,randomPoz+1);
+                }
+                var verificationCode = randomString
+                console.log(verificationCode);
                 User.findByIdAndUpdate({ _id: user._id }, { reset_password_code: verificationCode, reset_password_expires: Date.now() + 86400000 }, { upsert: true, new: true }).exec(function(err, new_user) {
                     console.log(new_user.reset_password_code)
                   next(err, verificationCode, new_user);
@@ -108,9 +109,9 @@ module.exports = {
           
                 smtpTransport.sendMail(data, function(err) {
                   if (!err) {
-                    return res.send(common.response(200, '已透過電郵將密碼重設連結傳送給用戶', ''));
+                    return res.send(common.response(200, '已透過電郵將驗證碼傳送給用戶', ''));
                   } else {
-                    return res.send(common.response(503, '網絡問題，無法傳送密碼重設連結', err));
+                    return res.send(common.response(503, '網絡問題，無法傳送密碼重設驗證碼', err));
                   }
                 });
               }
@@ -119,7 +120,7 @@ module.exports = {
         
 
     },
-    verifyResetPasswordToken: async (req, res) => { 
+    resetPassword: async (req, res) => { 
         const user_id = req.user_id;
         const token = req.token;
         const user = await User.findOne({ user_id })
