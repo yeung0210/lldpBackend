@@ -124,22 +124,23 @@ module.exports = {
         const new_psssword = req.body.new_password
         const reset_password_code = req.body.reset_password_code
         const user = await User.findOne({ user_id })
-        const now = Date().now;
+        const now = new Date()
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
-        if (reset_password_code == user.reset_password_code) { 
+        if (reset_password_code == user.reset_password_code) {
             if (now <= user.reset_password_expires) {
                 const salt = await bcrypt.genSalt(10)
                 const hash = await bcrypt.hash(new_psssword, salt)
+                if (hash == user.password) {
+                    return res.send(common.response(403, '新密碼與現時密碼不能相同', ''))
+                }
                 user.password = hash
                 user.reset_password_code = undefined
                 user.reset_password_expires = undefined
                 user.save(function(err) {
                     if (err) {
-                        return res.status(422).send({
-                        message: err
-                        });
+                        return res.send(common.response(422, '未能重設密碼，請稍後重試', ''))  
                     } else {
                         return res.send(common.response(200, '重設密碼成功', ''))  
                     }
@@ -148,7 +149,7 @@ module.exports = {
                 return res.send(common.response(410, '驗證碼已過時，請重新提出重設密碼的請求', '')) 
             }
         } else {
-            return res.send(common.response(401, '未能驗證用戶身份，請重新提出重設密碼的請求', ''))  
+            return res.send(common.response(401, '驗證碼不符，請重新提出重設密碼的請求', ''))  
         }
 
     }
