@@ -130,10 +130,9 @@ module.exports = {
         }
         if (reset_password_code == user.reset_password_code) {
             if (now <= user.reset_password_expires) {
-                const salt = await bcrypt.genSalt(10)
-                const hash = await bcrypt.hash(new_psssword, salt)
-                if (hash == user.password) {
-                    return res.send(common.response(403, '新密碼與現時密碼不能相同', ''))
+                const isMatch = await bcrypt.compare(new_psssword, user.password)
+                if (isMatch) { 
+                    return res.send(common.response(403, '新密碼不能與現有密碼相同，請重新輸入', ''))  
                 }
                 user.password = hash
                 user.reset_password_code = undefined
@@ -149,7 +148,7 @@ module.exports = {
                 return res.send(common.response(410, '驗證碼已過時，請重新提出重設密碼的請求', '')) 
             }
         } else {
-            return res.send(common.response(401, '驗證碼不符，請重新提出重設密碼的請求', ''))  
+            return res.send(common.response(401, '驗證碼不符', ''))  
         }
 
     }
