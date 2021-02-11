@@ -1,9 +1,9 @@
 const User = require('../models/user')
 const bcrypt = require('bcryptjs')
 const common = require('../common')
-const jwt = require('jsonwebtoken');
-const response = require('../common');
-const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken')
+const response = require('../common')
+const nodemailer = require('nodemailer')
 const async = require('async');
 const crypto = require('crypto');
 
@@ -44,8 +44,8 @@ module.exports = {
     },
 
     login: async (req, res) => {
-        const user_id = req.body.user_id;
-        const password = req.body.password;
+        const user_id = req.body.user_id
+        const password = req.body.password
         const user = await User.findOne({ user_id })
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
@@ -92,10 +92,9 @@ module.exports = {
                     randomString += charSet.substring(randomPoz,randomPoz+1);
                 }
                 var verificationCode = randomString
-                console.log(verificationCode);
                 User.findByIdAndUpdate({ _id: user._id }, { reset_password_code: verificationCode, reset_password_expires: Date.now() + 86400000 }, { upsert: true, new: true }).exec(function(err, new_user) {
                     console.log(new_user.reset_password_code)
-                  next(err, verificationCode, new_user);
+                  next(err, verificationCode, new_user)
                 });
             },
             function(verificationCode, user, done) {
@@ -121,14 +120,33 @@ module.exports = {
 
     },
     resetPassword: async (req, res) => { 
-        const user_id = req.user_id;
-        const token = req.token;
+        const user_id = req.body.user_id
+        const new_psssword = req.body.new_password
+        const reset_password_code = req.body.reset_password_code
         const user = await User.findOne({ user_id })
+        const now = Date().now;
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
-        if (token == user.reset_password_token) { 
-            return res.send(common.response(200, '允許重設密碼', ''))  
+        if (reset_password_code == user.reset_password_code) { 
+            if (now <= user.reset_password_expires) {
+                const salt = await bcrypt.genSalt(10)
+                const hash = await bcrypt.hash(new_psssword, salt)
+                user.password = hash
+                user.reset_password_code = undefined
+                user.reset_password_expires = undefined
+                user.save(function(err) {
+                    if (err) {
+                        return res.status(422).send({
+                        message: err
+                        });
+                    } else {
+                        return res.send(common.response(200, '重設密碼成功', ''))  
+                    }
+                })
+            } else {
+                return res.send(common.response(410, '驗證碼已過時，請重新提出重設密碼的請求', '')) 
+            }
         } else {
             return res.send(common.response(401, '未能驗證用戶身份，請重新提出重設密碼的請求', ''))  
         }
