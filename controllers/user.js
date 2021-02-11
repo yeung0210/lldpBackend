@@ -85,7 +85,7 @@ module.exports = {
 
         async.waterfall([
             function(next) {
-                const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                const charSet = 'abcdefghijklmnopqrstuvwxyz0123456789';
                 var randomString = '';
                 for (var i = 0; i < 6; i++) {
                     var randomPoz = Math.floor(Math.random() * charSet.length);
