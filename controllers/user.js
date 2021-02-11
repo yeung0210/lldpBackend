@@ -27,14 +27,14 @@ module.exports = {
         if (sameEmailUser) {
             return res.send(common.response(409, '該電子郵件地址已有人使用', ''))
         }
-        const sameUserId = await User.findOne({ userId: req.body.userId })
+        const sameUserId = await User.findOne({ user_id: req.body.user_id })
         if (sameUserId) {
             return res.send(common.response(409, '該用戶名稱已有人使用，請重新輸入', ''))
         }
         const salt = await bcrypt.genSalt(10)
         const hash = await bcrypt.hash(req.body.password, salt)
         const newUser = new User({
-            userId: req.body.userId,
+            user_id: req.body.user_id,
             email: req.body.email,
             name: req.body.name,
             password: hash,
@@ -44,9 +44,9 @@ module.exports = {
     },
 
     login: async (req, res) => {
-        const userId = req.body.userId;
+        const user_id = req.body.user_id;
         const password = req.body.password;
-        const user = await User.findOne({ userId })
+        const user = await User.findOne({ user_id })
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
@@ -54,10 +54,10 @@ module.exports = {
         if (!isMatch) { 
             return res.send(common.response(401, '密碼錯誤', ''))  
         }
-        const accessToken = jwt.sign({ userId: user.userId }, process.env.SECRET)
+        const accessToken = jwt.sign({ user_id: user.user_id }, process.env.SECRET)
         const data = {
             user: {
-                userId: user.userId,
+                user_id: user.user_id,
                 email: user.email,
                 name: user.name
             },
@@ -77,32 +77,33 @@ module.exports = {
         })
     },
     forgotPassword: async (req, res) => {
-        const userId = req.body.userId;
-        const user = await User.findOne({ userId })
+        const user_id = req.body.user_id;
+        const user = await User.findOne({ user_id })
         if (!user) { 
             return res.send(common.response(404, '用戶不存在', ''))  
         }
 
         async.waterfall([
             function(next) { 
-                crypto.randomBytes(20, function(err, buffer) {
-                    var token = buffer.toString('hex');
-                    console.log(token);
-                    next(err, user, token);
+                crypto.randomBytes(3, function(err, buffer) {
+                    var verificationCode = buffer.toString('hex');
+                    console.log(verificationCode);
+                    next(err, user, verificationCode);
                 });
             },
-            function(user, token, next) {
-                User.findByIdAndUpdate({ _id: user._id }, { reset_password_token: token, reset_password_expires: Date.now() + 86400000 }, { upsert: true, new: true }).exec(function(err, new_user) {
-                  next(err, token, new_user);
+            function(user, verificationCode, next) {
+                User.findByIdAndUpdate({ _id: user._id }, { reset_password_code: verificationCode, reset_password_expires: Date.now() + 86400000 }, { upsert: true, new: true }).exec(function(err, new_user) {
+                    console.log(new_user.reset_password_code)
+                  next(err, verificationCode, new_user);
                 });
             },
-            function(token, user, done) {
+            function(verificationCode, user, done) {
                 var data = {
                   to: user.email,
                   from: email,
                   template: 'forgot-password-email',
                   subject: '主子萬歲：重設密碼',
-                  html: '<h2>重設密碼</h2><p>請透過以下連結，進入應用程式</p><p><a>按此重設密碼</a></p>'
+                  html: '<h2>重設密碼</h2><p>在重設密碼時，請輸入電郵驗證碼</p><p><b>' + verificationCode + '<b></p>'
                 };
           
                 smtpTransport.sendMail(data, function(err) {
@@ -116,6 +117,20 @@ module.exports = {
 
         ]);
         
+
+    },
+    verifyResetPasswordToken: async (req, res) => { 
+        const user_id = req.user_id;
+        const token = req.token;
+        const user = await User.findOne({ user_id })
+        if (!user) { 
+            return res.send(common.response(404, '用戶不存在', ''))  
+        }
+        if (token == user.reset_password_token) { 
+            return res.send(common.response(200, '允許重設密碼', ''))  
+        } else {
+            return res.send(common.response(401, '未能驗證用戶身份，請重新提出重設密碼的請求', ''))  
+        }
 
     }
 }
