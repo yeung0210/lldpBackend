@@ -169,7 +169,7 @@ module.exports = {
     
         smtpTransport.sendMail(data, function(err) {
             if (!err) {
-            return res.send(common.response(200, '已透過電郵將用戶名稱傳送給用戶', ''));
+            return res.send(common.response(200, '已將用戶名稱傳送到郵箱', ''));
             } else {
             return res.send(common.response(503, '網絡問題，無法傳送電郵', err));
             }
