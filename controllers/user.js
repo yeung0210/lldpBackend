@@ -103,7 +103,7 @@ module.exports = {
                   from: email,
                   template: 'forgot-password-email',
                   subject: '主子萬歲：重設密碼',
-                  html: '<h2>重設密碼</h2><p>在重設密碼時，請輸入電郵驗證碼</p><p><b>' + verificationCode + '<b></p>'
+                  html: '<h2>重設密碼</h2><p>在重設密碼時，請輸入此電郵驗證碼</p><h3>' + verificationCode + '</h3><h6>注意：此驗證碼將於兩小時後過期'
                 };
           
                 smtpTransport.sendMail(data, function(err) {
