@@ -103,7 +103,7 @@ module.exports = {
                   from: email,
                   template: 'forgot-password-email',
                   subject: '主子萬歲：重設密碼',
-                  html: '<h2>重設密碼</h2><p>在重設密碼時，請輸入此電郵驗證碼</p><h3>' + verificationCode + '</h3><h6>注意：此驗證碼將於兩小時後過期'
+                  html: '<p>在重設密碼時，請輸入此電郵驗證碼</p><h3>' + verificationCode + '</h3><h5>注意：此驗證碼將於兩小時後過期</h5>'
                 };
           
                 smtpTransport.sendMail(data, function(err) {
@@ -150,6 +150,32 @@ module.exports = {
         } else {
             return res.send(common.response(401, '驗證碼不符', ''))  
         }
+
+    },
+    forgotUserId: async (req, res) => {
+        const email = req.body.email;
+        const user = await User.findOne({ email })
+        if (!user) { 
+            return res.send(common.response(404, '用戶不存在', ''))  
+        }
+
+        var data = {
+            to: user.email,
+            from: email,
+            template: 'forgot-userId-email',
+            subject: '主子萬歲：忘記用戶名稱',
+            html: '<p>你好，此登記電郵的用戶名稱為：</p><h3>' + user.user_id + '</h3>'
+        };
+    
+        smtpTransport.sendMail(data, function(err) {
+            if (!err) {
+            return res.send(common.response(200, '已透過電郵將用戶名稱傳送給用戶', ''));
+            } else {
+            return res.send(common.response(503, '網絡問題，無法傳送電郵', err));
+            }
+        });
+
+        
 
     }
 }
