@@ -54,14 +54,16 @@ module.exports = {
         if (!isMatch) { 
             return res.send(common.response(401, '密碼錯誤', ''))  
         }
-        const accessToken = jwt.sign({ user_id: user.user_id }, process.env.SECRET)
+        const accessToken = jwt.sign({ user_id: user.user_id }, process.env.SECRET, { expiresIn: '30m'})
+        const refreshToken = jwt.sign({ user_id: user.user_id }, process.env.REFRESH_TOKEN_SECRET)
         const data = {
             user: {
                 user_id: user.user_id,
                 email: user.email,
                 name: user.name
             },
-            token : accessToken
+            access_token : accessToken,
+            refresh_token: refreshToken
         };
         res.send(common.response(200, '成功登入', data))
     }, 
@@ -174,9 +176,30 @@ module.exports = {
             return res.send(common.response(503, '網絡問題，無法傳送電郵', err));
             }
         });
-
-        
-
+    },
+    refreshToken: async (req, res) => {
+        const token = req.body.refresh_token
+        if (token == null) { return res.sendStatus(401) }
+        jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+            if (err) { 
+                return res.sendStatus(403) 
+            } 
+            else {
+                const accessToken = jwt.sign({ user_id: user.user_id }, process.env.SECRET, { expiresIn: '30m'})
+                const refreshToken = jwt.sign({ user_id: user.user_id }, process.env.REFRESH_TOKEN_SECRET)
+                const data = {
+                    user: {
+                        user_id: user.user_id,
+                        email: user.email,
+                        name: user.name
+                    },
+                    access_token : accessToken,
+                    refresh_token: refreshToken
+                }
+                res.send(common.response(200, '成功更新token', data))
+            }
+        })
     }
+
 }
 
