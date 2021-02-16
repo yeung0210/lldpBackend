@@ -196,7 +196,7 @@ module.exports = {
                     access_token : accessToken,
                     refresh_token: refreshToken
                 }
-                res.send(common.response(200, '成功更新token', data))
+                res.send(common.response(200, '成功更新代碼', data))
             }
         })
     }
