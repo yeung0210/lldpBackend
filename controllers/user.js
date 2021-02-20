@@ -136,6 +136,8 @@ module.exports = {
                 if (isMatch) { 
                     return res.send(common.response(403, '新密碼不能與現有密碼相同，請重新輸入', ''))  
                 }
+                const salt = await bcrypt.genSalt(10)
+                const hash = await bcrypt.hash(new_psssword, salt)
                 user.password = hash
                 user.reset_password_code = undefined
                 user.reset_password_expires = undefined
