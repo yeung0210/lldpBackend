@@ -48,11 +48,11 @@ module.exports = {
         const password = req.body.password
         const user = await User.findOne({ user_id })
         if (!user) { 
-            return res.send(common.response(404, '用戶不存在', ''))  
+            return res.send(common.response(404, '用戶不存在', {}))  
         }
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) { 
-            return res.send(common.response(401, '密碼錯誤', ''))  
+            return res.send(common.response(401, '密碼錯誤', {}))  
         }
         const accessToken = jwt.sign({ user_id: user.user_id }, process.env.SECRET, { expiresIn: '30m'})
         const refreshToken = jwt.sign({ user_id: user.user_id }, process.env.REFRESH_TOKEN_SECRET)
@@ -82,7 +82,7 @@ module.exports = {
         const email = req.body.email;
         const user = await User.findOne({ email })
         if (!user) { 
-            return res.send(common.response(404, '用戶不存在', ''))  
+            return res.send(common.response(404, '用戶不存在', {}))  
         }
 
         async.waterfall([
