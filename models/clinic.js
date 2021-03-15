@@ -10,7 +10,7 @@ const clinicSchema = new mongoose.Schema ({
     website: String, 
     opening_hour: String, 
     district: String, 
-    // availability_times: Array,
+    availability_times: Object,
     latitude: Number, 
     longitude: Number,
     image_url: String,

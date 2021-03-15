@@ -9,6 +9,10 @@ router.post('/getAll', clinicController.getAll)
 
 router.post('/getByDistrict', clinicController.getByDistrict)
 
+router.post('/getClinicNearby', clinicController.getClinicNearby)
+
+
+
 
 
 

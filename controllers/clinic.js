@@ -1,6 +1,11 @@
 const Clinic = require('../models/clinic')
 const common = require('../common')
 const async = require('async');
+const Moment = require('moment');
+const MomentRange = require('moment-range');
+
+const moment = MomentRange.extendMoment(Moment);
+
 
 
 module.exports = { 
@@ -32,6 +37,25 @@ module.exports = {
         const district = req.body.district
         Clinic.find({ 'district': district }, function (err, docs) {
             res.send(common.response(200, 'Clinic in ' + district, docs))
+        });
+    },
+    getClinicNearby: (req, res) => {
+        var current = new Date()
+        var availableClinics = []
+        Clinic.find({}, function (err, allClinics) {
+            allClinics.forEach( function(clinic) {
+                const opening_hour_session = clinic.availability_times[current.getDay()]
+                // console.log(clinic.availability_times[current.getDay()])
+                const matched = opening_hour_session.some( function(timeObj) {
+                    const start_time = moment(timeObj["start_time"], 'HH:mm a')
+                    const end_time = moment(timeObj["end_time"], 'HH:mm a')
+                    const range = moment.range(start_time, end_time)
+                    return range.contains(current)
+                })
+                console.log(matched)
+                if (matched) availableClinics.push(clinic)
+            } )
+            // res.send(availableClinics)
         });
     }
 }
