@@ -47,10 +47,13 @@ module.exports = {
                 const opening_hour_session = clinic.availability_times[current.getDay()]
                 // console.log(clinic.availability_times[current.getDay()])
                 const matched = opening_hour_session.some( function(timeObj) {
-                    const start_time = moment(timeObj["start_time"], 'HH:mm a')
-                    const end_time = moment(timeObj["end_time"], 'HH:mm a')
-                    const range = moment.range(start_time, end_time)
-                    return range.contains(current)
+                    if (timeObj["start_time"] == "24HOURS" && timeObj["end_time"] == "24HOURS") { return true}
+                    else {
+                        const start_time = moment(timeObj["start_time"], 'HH:mm a')
+                        const end_time = moment(timeObj["end_time"], 'HH:mm a')
+                        const range = moment.range(start_time, end_time)
+                        return range.contains(current)
+                    }
                 })
                 console.log(matched)
                 if (matched) availableClinics.push(clinic)
