@@ -39,38 +39,57 @@ module.exports = {
             res.send(common.response(200, 'Clinic in ' + district, docs))
         });
     },
-    getClinicNearby: (req, res) => {
+    getClinicNearby: async (req, res) => {
         var current = new Date()
         var availableClinics = []
-        Clinic.find({}, function (err, allClinics) {
-            allClinics.forEach( function(clinic) {
-                const opening_hour_session = clinic.availability_times[current.getDay()]
-                // console.log(clinic.availability_times[current.getDay()])
-                const matched = opening_hour_session.some( function(timeObj) {
-                    if (timeObj["start_time"] == "24HOURS" && timeObj["end_time"] == "24HOURS") { return true}
-                    else {
-                        const start_time = moment(timeObj["start_time"], 'HH:mm a')
-                        const end_time = moment(timeObj["end_time"], 'HH:mm a')
-                        const range = moment.range(start_time, end_time)
-                        return range.contains(current)
-                    }
+
+        async.waterfall([
+            function(next) {
+                Clinic.find({}, function (err, allClinics) {
+                    allClinics.forEach( function(clinic) {
+                        const opening_hour_session = clinic.availability_times[current.getDay()]
+                        // console.log(clinic.availability_times[current.getDay()])
+                        const matched = opening_hour_session.some( function(timeObj) {
+                            if (timeObj["start_time"] == "24HOURS" && timeObj["end_time"] == "24HOURS") { return true}
+                            else {
+                                const start_time = moment(timeObj["start_time"], 'HH:mm a')
+                                const end_time = moment(timeObj["end_time"], 'HH:mm a')
+                                const range = moment.range(start_time, end_time)
+                                return range.contains(current)
+                            }
+                        })
+                        console.log(clinic.clinic_id, matched)
+                        if (matched) availableClinics.push(clinic)
+                    } )
+                    
+                    next(err, availableClinics, next)
                 })
-                console.log(clinic.clinic_id, matched)
-                if (matched) availableClinics.push(clinic)
-            } )
-        });
-        const start = {
-            latitude: req.body.latitude,
-            longitude: req.body.longitude
-        }
-        const clinicsInDistance = availableClinics.map( function(clinic) {
-            const end = {
-                latitude: clinic.latitude,
-                longitude: clinic.longitude
+                
+            },
+            function(availableClinics, done) {
+                const start = {
+                    latitude: req.body.latitude,
+                    longitude: req.body.longitude
+                }
+                const clinicsWithDistance = availableClinics.map( function(clinic) {
+                    const end = {
+                        latitude: clinic.latitude,
+                        longitude: clinic.longitude
+                    }
+                    return {clinic, "distance" : haversine(start, end, {unit: 'meter'}) }
+                }) 
+                clinicsWithDistance.sort(function(a, b) {
+                    return a.distance - b.distance
+                })
+                const availableClinicsNearby = clinicsWithDistance.filter(function(clinic)  {
+                    return clinic.distance <= 2000
+                })
+                res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
             }
-            console.log(haversine(start, end, {unit: 'meter'}))
-            return haversine(start, end, {unit: 'meter'})
-        })
+        ])
+
+        
+        
     }
 }
 
