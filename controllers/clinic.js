@@ -58,7 +58,6 @@ module.exports = {
                                 return range.contains(current)
                             }
                         })
-                        console.log(clinic.clinic_id, matched)
                         if (matched) availableClinics.push(clinic)
                     } )
                     
@@ -84,7 +83,12 @@ module.exports = {
                 const availableClinicsNearby = clinicsWithDistance.filter(function(clinic)  {
                     return clinic.distance <= 2000
                 })
-                res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
+                if (availableClinicsNearby.length == 0) {
+                    res.send(common.response(200, 'Clinic Nearby', clinicsWithDistance.slice(0,2)))
+                } else {
+                    res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
+                }
+                
             }
         ])
 
