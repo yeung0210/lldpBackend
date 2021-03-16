@@ -84,7 +84,7 @@ module.exports = {
                     return clinic.distance <= 2000
                 })
                 if (availableClinicsNearby.length == 0) {
-                    res.send(common.response(200, 'Clinic Nearby', clinicsWithDistance.slice(0,2)))
+                    res.send(common.response(200, 'Clinic Nearby', clinicsWithDistance.slice(0,3)))
                 } else {
                     res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
                 }
