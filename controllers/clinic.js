@@ -3,8 +3,8 @@ const common = require('../common')
 const async = require('async');
 const Moment = require('moment');
 const MomentRange = require('moment-range');
-
 const moment = MomentRange.extendMoment(Moment);
+const haversine = require('haversine')
 
 
 
@@ -55,11 +55,22 @@ module.exports = {
                         return range.contains(current)
                     }
                 })
-                console.log(matched)
+                console.log(clinic.clinic_id, matched)
                 if (matched) availableClinics.push(clinic)
             } )
-            // res.send(availableClinics)
         });
+        const start = {
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
+        }
+        const clinicsInDistance = availableClinics.map( function(clinic) {
+            const end = {
+                latitude: clinic.latitude,
+                longitude: clinic.longitude
+            }
+            console.log(haversine(start, end, {unit: 'meter'}))
+            return haversine(start, end, {unit: 'meter'})
+        })
     }
 }
 
