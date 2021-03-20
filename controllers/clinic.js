@@ -85,6 +85,9 @@ module.exports = {
                 })
                 if (availableClinicsNearby.length == 0) {
                     res.send(common.response(200, 'Clinic Nearby', clinicsWithDistance.slice(0,3)))
+                } else if (availableClinicsNearby.length < 3){
+                    availableClinicsNearby.push(clinicsWithDistance.slice(0,(3-availableClinicsNearby.length)))
+                    res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
                 } else {
                     res.send(common.response(200, 'Clinic Nearby', availableClinicsNearby))
                 }
