@@ -13,6 +13,7 @@ app.use(express.static("public"));
 
 const userRoutes = require('./routes/user')
 const clinicRoutes = require('./routes/clinic')
+const petRoutes = require('./routes/pet')
 
 mongoose.connect( process.env.MONGODB_URI|| "mongodb://localhost:27017/lldpDB", {
     useNewUrlParser: true, useUnifiedTopology: true,  useFindAndModify: false 
@@ -20,6 +21,7 @@ mongoose.connect( process.env.MONGODB_URI|| "mongodb://localhost:27017/lldpDB", 
 
 app.use('/users', userRoutes)
 app.use('/clinics', clinicRoutes)
+app.use('/pets', petRoutes)
 
 let port = process.env.PORT;
 if (port == null || port == "") {
