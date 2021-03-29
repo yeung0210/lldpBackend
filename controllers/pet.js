@@ -22,9 +22,9 @@ module.exports = {
     getByUserId: (req, res) => {
         userController.authenticate(req, res, function() {
             const user_id = req.user.user_id
-        Pet.find({ 'user_id': user_id }, function (err, docs) {
-            res.send(common.response(200, 'Pet' + district, docs))
-        });
+            Pet.find({ 'user_id': user_id }, function (err, docs) {
+                res.send(common.response(200, 'Pet', docs))
+            });
         })
     },
 }
