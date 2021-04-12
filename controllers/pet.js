@@ -10,6 +10,7 @@ module.exports = {
                 pet_id: req.body.pet_id,
                 user_id: req.user.user_id,
                 name: req.body.name,
+                gender: req.body.gender,
                 date_of_birth: req.body.date_of_birth,
                 type: req.body.type, 
                 breed: req.body.breed, 
