@@ -20,11 +20,23 @@ module.exports = {
             res.send(common.response(200, '成功加入', ''))
         })
     },
-    getByUserId: (req, res) => {
+    getByUserId: async (req, res) => {
         userController.authenticate(req, res, function() {
             const user_id = req.user.user_id
             Pet.find({ 'user_id': user_id }, function (err, docs) {
-                res.send(common.response(200, 'Pet', docs))
+                return res.send(common.response(200, 'Pet', docs))
+            });
+        })
+    },
+    removeByUserId: (req, res) => {
+        userController.authenticate(req, res, function() {
+            const user_id = req.user.user_id
+            Pet.deleteOne({ 'pet_id': req.body.pet_id, 'user_id': user_id}, function(err) {
+                if (!err) {
+                    return res.send(common.response(200, 'Successfully Remove Pet', {})) 
+                } else {
+                    return res.send(common.response(503, '網絡問題，請重試', {})) 
+                }
             });
         })
     },

@@ -8,4 +8,6 @@ router.post('/add', petController.add)
 
 router.post('/getByUserId', petController.getByUserId)
 
+router.delete('/delete', petController.removeByUserId)
+
 module.exports = router
