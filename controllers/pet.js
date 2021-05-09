@@ -33,7 +33,7 @@ module.exports = {
             const user_id = req.user.user_id
             Pet.deleteOne({ 'pet_id': req.body.pet_id, 'user_id': user_id}, function(err) {
                 if (!err) {
-                    return res.send(common.response(200, 'Successfully Remove Pet', {})) 
+                    return res.send(common.response(200, '成功移除', {})) 
                 } else {
                     return res.send(common.response(503, '網絡問題，請重試', {})) 
                 }
