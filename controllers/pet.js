@@ -42,9 +42,7 @@ module.exports = {
     },
     updateByUserId: async (req, res) => {
         userController.authenticate(req, res, function() {
-            Pet.findByIdAndUpdate(req.body.pet_id, {
-                pet_id: req.body.pet_id,
-                user_id: req.user.user_id,
+            Pet.findOneAndUpdate({ pet_id: req.body.pet_id} , {
                 name: req.body.name,
                 gender: req.body.gender,
                 date_of_birth: req.body.date_of_birth,
@@ -53,9 +51,9 @@ module.exports = {
                 image_url: req.body.image_url, 
             }, function(err){
                 if (!err) {
-                    return res.send(common.response(200, '成功移除', {})) 
+                    return res.send(common.response(200, '成功更新資料', {})) 
                 } else {
-                    return res.send(common.response(503, '網絡問題，請重試', {})) 
+                    return res.send(common.response(503, '網絡問題，請重試', { error: err})) 
                 }
             })
         })
