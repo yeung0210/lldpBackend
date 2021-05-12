@@ -10,4 +10,6 @@ router.post('/getByUserId', petController.getByUserId)
 
 router.delete('/delete', petController.removeByUserId)
 
+router.patch('/update', petController.updateByUserId)
+
 module.exports = router
